@@ -26,7 +26,7 @@ sudo apt install python3-venv libsane-dev build-essential
 ```
 After that you can clone the git repository, create a virtual environment and install the required python modules:
 ```
-git clone https://seahawk1986/simple-web-scan/
+git clone https://seahawk1986/simple-webscan/
 cd simple-web-scan
 python3 -m venv .venv
 . .venv/bin/activate
