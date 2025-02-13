@@ -1,0 +1,56 @@
+<main id="main" class="container">
+    <div role="content">
+    <h1>
+      <ul class="breadcrumb">
+        <li>
+          <a href="/">HOME</a>
+        </li>
+        <li>
+          {{ scanner.model }}
+        </li>
+      </ul>
+    </h1>
+    <form
+      hx-post="/scan"
+      hx-ext="json-enc"
+      hx-target="#main"
+      hx-swap="outerHTML"
+    >
+      <fieldset>
+        {% for option in scanner.options if (option.name in ('mode', 'source', 'resolution') and
+        option.constraint != None) %}
+        <label for="{{ option.name }}">
+          {% if option.desc %}
+          <em data-tooltip="{{ option.desc }}" data-placement="right">{{ option.title }}</em>
+          {% else %}
+          {{ option.title }}
+          {% endif %}
+        </label>
+        {% if option.type == SANE_TYPE.INT and option.constraint and option.constraint | length > 0 %}
+        <select name="{{option.name}}" aria-label="{{ option.desc }}" required>
+          {% for c in option.constraint %}
+          <option {{ 'selected' if option.name=='resolution' and c==config.preferred_resolution }} value="{{ c }}">{{ c }}</option>
+          {% endfor %}
+        </select>
+        {% elif option.type == SANE_TYPE.STRING and option.constraint and option.constraint | length > 0 %} {#
+        we have an string selection #}
+        <select name="{{option.name}}" aria-label="{{ option.desc }}" required>
+          {% for c in option.constraint %}
+          <option {{ 'selected=selected' if ((option.name=='source' and c==config.preferred_source ) or (option.name=='mode' and c==config.preferred_mode
+            )) }} value="{{ c }}">{{ c }}</option>
+          {% endfor %}
+        </select>
+        {% else %}
+        {{ option }}
+        {% endif %}
+        {% endfor %}
+      </fieldset>
+      <label><em data-tooltip="If empty, the filename defaults to 'Scan_%Y-%m-%d_%H:%M:%s.pdf'" data-placement="right">Filename</em></label>
+      <input id="filename" name="filename" placeholder="Filename (optional)"></input>
+      <fieldset role="group">
+        <button id="scanbtn" type="submit">Scan</button>
+      </fieldset>
+      <input type="hidden" id="scanner" name="scanner" value="{{ scanner.device_name }}" />
+    </form>
+</div>
+  </main>

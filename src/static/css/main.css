@@ -1,0 +1,21 @@
+ul.scannerlist {
+    list-style-type: none !important;
+    padding: 40px;
+}
+
+ul li {
+    font-size: 32px;
+    padding: 10px;
+}
+
+/* Add a color to all links inside the list */
+ul li a {
+/* color: #0275d8; */
+text-decoration: none;
+}
+
+/* Add a color on mouse-over */
+ul li a:hover {
+/* color: #01447e; */
+text-decoration: underline;
+} 

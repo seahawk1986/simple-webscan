@@ -1,0 +1,9 @@
+<ul class="scannerlist">
+    {% for scanner_name, scanner in scanners.items() %}
+    <li>
+        <h3><a href="/scanner/{{ scanner.device_name | uriquote }}">
+            {{ scanner.model }} ({{ scanner.vendor }})
+        </a></h3>
+    </li>
+    {% endfor %}
+</ul>

@@ -1,0 +1,14 @@
+<main id="main" class="container">
+  <card>
+    <header>
+      <h1>Please choose a Scanner:</h1>
+    </header>
+    <h1>
+      <div id="scanner_list">
+        {% include 'scanner_list.html' %}
+      </div>
+    </h1>
+  </card>
+  <button id="update-scanners" hx-get="/list_scanners" hx-target="#main" hx-swap="outerHTML">Update Scanner
+    list</button>
+</main>

@@ -1,0 +1,12 @@
+<main
+  id="main"
+  class="container"
+  hx-get="/isBusy/{{ scanner.device_name | uriquote }}"
+  hx-trigger="every 1s"
+  hx-swap="outerHTML"
+>
+    <article>
+        <h1>Scanning ...</h1>
+        <progress />
+    </article>
+</main>

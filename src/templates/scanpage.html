@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ scanner.model }}</title>
+  <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+  <link rel="stylesheet" href="/static/css/pico.min.css">
+  <link rel="stylesheet" href="/static/css/breadcrumb.css">
+  <script src="/static/js/htmx.min.js"></script>
+  <script src="/static/js/json-enc.js"></script>
+</head>
+
+<body>
+  {% if scanner.device_name in isBusy %}
+  {% include 'scanning.html' %}
+  {% elif has_front %}
+  {% include 'scan_backside.html' %}
+  {% else %}
+  {% include 'scanoptions.html' %}
+  {% endif %}
+
+</body>
+
+</html>
