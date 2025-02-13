@@ -31,7 +31,7 @@ cd simple-web-scan
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -U pip wheel
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
 ## Configuration
