@@ -1,7 +1,6 @@
 from contextlib import closing
 from enum import IntEnum
 from datetime import datetime
-import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt
@@ -91,7 +90,7 @@ def process_page(tmpdir: Path, output: pymupdf.Document, scan: Image.Image, n=0)
     page.show_pdf_page(rect, imgPDF, 0)
 
 
-def scan(options: ScanOptions):
+def scan(options: ScanOptions) -> Path|None:
     print(f"scan with {options.scanner}")
     with TemporaryDirectory() as tmp, closing(output := pymupdf.open()), sane.SaneDev(options.scanner) as scanner:
         print(f"scanner {options.scanner} opened")
@@ -99,9 +98,8 @@ def scan(options: ScanOptions):
         scanner.source = options.source
         scanner.resolution = options.resolution
         scanner.mode = options.mode
-        target = Path(options.filename if options.filename else f'Scan_{datetime.now():%Y-%m-%d_%H_%M_%S}.pdf')
-        if not target.suffix == '.pdf':
-            target.with_suffix('.pdf')
+        target = Path(options.filename if options.filename else f'Scan_{datetime.now():%Y-%m-%d_%H_%M_%S}.pdf').resolve()
+        target = Path(target.with_suffix('.pdf').name)
 
         scan: Image.Image
         if options.source == 'ADF':
@@ -113,7 +111,7 @@ def scan(options: ScanOptions):
             
         if output.page_count:
             output.save(config.scandir / target)
-            return target
+            return Path(target)
         else:
             print("no pages were scanned")
             return None
