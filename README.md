@@ -34,10 +34,22 @@ pip install -U pip wheel
 pip install -r requirements.txt
 ```
 
+Arch Linux has everything needed in it's regular package sources, if you use uvicorn directly to run the script:
+```shell
+sudo pacman -S git python-sane python-fastapi python-pydantic uvicorn
+```
+
 ## Configuration
 Change the variable `config` in `src/config.py` to set the scan directory (defaults to `/srv/files/Scans`) and the default options for scanner resolution (`300` dpi), source (`"ADF"`) and color mode (`"Gray"`).
 
 ## Running the programm
 You can start the program by calling `./run.sh`. This file also allows to customize the network options. By default it will listen to any client (`--host=0.0.0.0`) on port `8000`.
+
+On Arch Linux `fastapi run` currently doesn't work as expected, so one could use uvicorn instead: 
+```shell
+git clone https://seahawk1986/simple-webscan/
+cd simple-webscan/src/
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
 
 For productive use it might be helpful to run it behind a reverse proxy like nginx.
