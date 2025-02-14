@@ -99,7 +99,9 @@ def scan(options: ScanOptions) -> Path|None:
         scanner.resolution = options.resolution
         scanner.mode = options.mode
         target = Path(options.filename if options.filename else f'Scan_{datetime.now():%Y-%m-%d_%H_%M_%S}.pdf').resolve()
-        target = Path(target.with_suffix('.pdf').name)
+        target = Path(target.name)
+        if not target.suffix == '.pdf':
+            target = target.with_suffix(target.suffix + '.pdf')
 
         scan: Image.Image
         if options.source == 'ADF':
