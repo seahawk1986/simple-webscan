@@ -1,3 +1,4 @@
+import logging
 from contextlib import closing
 from enum import IntEnum
 from datetime import datetime
@@ -53,28 +54,31 @@ def list_scanners() -> dict[str, SaneScanner]:
     for device in sane.get_devices():
         device_name, vendor, model, type_info = device
         options = []
-        with sane.SaneDev(device_name) as scanner:
-            for o in scanner.get_options():
-                idx, name, title, desc, type_, unit, size, cap, constraint = o
-                options.append(SaneScannerOption(
-                    index=idx,
-                    name=name,
-                    title=title,
-                    desc=desc,
-                    type=type_,
-                    unit=unit,
-                    size=size,
-                    cap=cap,
-                    constraint=constraint,
-                ))
+        try:
+            with sane.SaneDev(device_name) as scanner:
+                for o in scanner.get_options():
+                    idx, name, title, desc, type_, unit, size, cap, constraint = o
+                    options.append(SaneScannerOption(
+                        index=idx,
+                        name=name,
+                        title=title,
+                        desc=desc,
+                        type=type_,
+                        unit=unit,
+                        size=size,
+                        cap=cap,
+                        constraint=constraint,
+                    ))
 
-        devices[device_name] = SaneScanner(
-            device_name=device_name,
-            vendor=vendor,
-            model=model,
-            type_info=type_info,
-            options=options,
-        )
+            devices[device_name] = SaneScanner(
+                device_name=device_name,
+                vendor=vendor,
+                model=model,
+                type_info=type_info,
+                options=options,
+            )
+        except Exception as e:
+            logging.error(e)
     return devices
 
 
