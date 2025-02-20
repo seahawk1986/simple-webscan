@@ -1,0 +1,23 @@
+[project]
+name = "simple-webscan"
+version = "0.1.0"
+description = "offers a webinterface to use SANE scanners"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115.8",
+    "pillow>=11.1.0",
+    "pydantic>=2.10.6",
+    "pymupdf>=1.25.3",
+    "python-sane>=2.9.1",
+]
+
+[project.scripts]
+simple-webscan = "simple_webscan.main:run_main"
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

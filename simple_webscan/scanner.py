@@ -10,7 +10,9 @@ import pymupdf
 import sane
 from PIL import Image
 
-from config import config
+from simple_webscan.config import load_config
+
+config = load_config()
 
 class SaneType(IntEnum):
     BOOL = 0

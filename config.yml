@@ -1,0 +1,4 @@
+scandir: Scans
+preferred_resolution: 300
+preferred_mode: Gray
+preferred_source: ADF

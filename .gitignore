@@ -1,3 +1,13 @@
-src/__pycache__/*
-*.pyc
-.venv/
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# default scan dir when using run.sh
+/Scans

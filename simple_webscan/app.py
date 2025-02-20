@@ -1,20 +1,20 @@
-from contextlib import asynccontextmanager, closing
+from contextlib import closing, asynccontextmanager
 import logging
 from pathlib import Path
 import threading
 from functools import wraps
-from multiprocessing import Pool
 from urllib.parse import quote
 
 import pymupdf
 import sane
+
 from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from config import config
-from scanner import (
+from simple_webscan.config import load_config
+from simple_webscan.scanner import (
     ScanOptions,
     list_scanners,
     scan,
@@ -23,12 +23,23 @@ from scanner import (
     SaneType,
 )
 
-app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
+module_dir = Path(__file__).parent
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Read the scanners on startup - this takes some time,
+    # the application won't respond until the scan is done
+    update_scanners()
+    yield
+
+app = FastAPI(lifespan=lifespan)
+app.mount("/static", StaticFiles(directory=module_dir / "static"), name="static")
+load_config().scandir.mkdir(exist_ok=True, parents=True)
 globals_lock = threading.Lock()
 sane_lock = threading.Lock()
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=module_dir / "templates")
 templates.env.filters["uriquote"] = lambda x: quote(str(x)) if x else ""
 
 scan_list_update = False
@@ -152,13 +163,14 @@ async def is_busy(request: Request, scanner_name: str):
         return templates.TemplateResponse(
             request=request,
             name="scanoptions.html",
-            context={"scanner": scanner, "SANE_TYPE": SaneType, "config": config},
+            context={"scanner": scanner, "SANE_TYPE": SaneType, "config": load_config()},
         )
 
 
 @app.get("/scanner/{scanner_name:path}", response_class=HTMLResponse)
 def get_scan_site(request: Request, scanner_name: str):
     scanner = global_scanner_dict[scanner_name]
+    config = load_config()
     return templates.TemplateResponse(
         request=request,
         name="scanpage.html",
@@ -192,6 +204,7 @@ def perform_scan(data: ScanOptions):
 
 def add_backside(data: ScanOptions):
     global has_front, last_scan_filenames
+    config = load_config()
     if not (frontside_file := last_scan_filenames.get(data.scanner)):
         raise FileExistsError("no front side defined")
     data.filename = f"{frontside_file.name}_backside.pdf"
@@ -255,6 +268,7 @@ async def backside_scan(
 @app.post("/done/{scanner_name:path}", response_class=HTMLResponse)
 async def reset_front(request: Request, scanner_name: str):
     global has_front
+    config = load_config()
     with globals_lock:
         scanner = global_scanner_dict[scanner_name]
         has_front.discard(scanner.device_name)
@@ -263,8 +277,3 @@ async def reset_front(request: Request, scanner_name: str):
         name="scanoptions.html",
         context={"scanner": scanner, "SANE_TYPE": SaneType, 'config': config},
     )
-
-
-# Read the scanners on startup - this takes some time,
-# the application won't respond until the scan is done
-update_scanners()
