@@ -30,17 +30,17 @@ git clone https://seahawk1986/simple-webscan/
 cd simple-web-scan
 python3 -m venv .venv
 . .venv/bin/activate
-pip install -U pip wheel uv
+pip install -U uv
 uv pip install -r pyproject.toml
 ```
 
-Arch Linux has everything needed in it's regular package sources, if you use uvicorn directly to run the script:
+Arch Linux has everything needed in it's regular package sources:
 ```shell
 sudo pacman -S git python-sane python-fastapi python-pydantic uvicorn
 ```
 
 ## Configuration
-You can set the scan options in a yaml file  (see [`config.yml`](config.yml)). By setting an environment variable `CONFIG_FILE`, you can choose where the configuration file is expected. If it doesn't exist, it will be created automatically using the default options.
+You can set the scan options in a yaml file  (see [`config.yml`](config.yml)). By setting the environment variable `CONFIG_FILE`, you can choose where the configuration file is expected. If it doesn't exist, it will be created automatically using the default options.
 
 ## Running the programm
 You can start the program by calling `./run.sh`. This file also allows to customize the network options and the location of the configuration file. By default it will listen to any client (`--host=0.0.0.0`) on port `8000`, use for the `config.yml` included in the git repsository and write scans to the folder `./Scans`.
