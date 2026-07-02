@@ -4,7 +4,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -22,6 +22,7 @@ async def lifespan(app: FastAPI):
     # the application won't respond until the scan is done
     scanner.update_scanners()
     yield
+
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=module_dir / "static"), name="static")
@@ -70,32 +71,45 @@ def get_scanlist_update_status(request: Request):
             context={"scanners": state.scanners},
         )
 
+
 @app.get("/isBusy/{scanner_name:path}", response_class=HTMLResponse)
 async def is_busy(request: Request, scanner_name: str):
     global isBusy
     global has_front
     print(f"busy scanners: {state.isBusy}")
     with state.globals_lock:
-        sane_scanner = state.scanners[scanner_name]
+        try:
+            sane_scanner = state.scanners[scanner_name]
+        except KeyError:
+            raise HTTPException(status_code=404, detail="Scanner not found")
     if scanner_name in state.isBusy:
         return templates.TemplateResponse(
             request=request, name="scanning.html", context={"scanner": sane_scanner}
         )
     elif sane_scanner.device_name in state.has_front:
         return templates.TemplateResponse(
-            request=request, name="scan_backside.html", context={"scanner": sane_scanner}
+            request=request,
+            name="scan_backside.html",
+            context={"scanner": sane_scanner},
         )
     else:
         return templates.TemplateResponse(
             request=request,
             name="scanoptions.html",
-            context={"scanner": sane_scanner, "SANE_TYPE": SaneType, "config": load_config()},
+            context={
+                "scanner": sane_scanner,
+                "SANE_TYPE": SaneType,
+                "config": load_config(),
+            },
         )
 
 
 @app.get("/scanner/{scanner_name:path}", response_class=HTMLResponse)
 def get_scan_site(request: Request, scanner_name: str):
-    sane_scanner = state.scanners[scanner_name]
+    try:
+        sane_scanner = state.scanners[scanner_name]
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Scanner {scanner_name} not found")
     config = load_config()
     return templates.TemplateResponse(
         request=request,
@@ -136,7 +150,9 @@ async def backside_scan(
 ):
     with state.globals_lock:
         sane_scanner = state.scanners[scanner_name]
-        background_tasks.add_task(scanner.add_backside, state.last_scan_options[sane_scanner.device_name])
+        background_tasks.add_task(
+            scanner.add_backside, state.last_scan_options[sane_scanner.device_name]
+        )
         return templates.TemplateResponse(
             request=request,
             name="scanning.html",
@@ -156,5 +172,5 @@ async def reset_front(request: Request, scanner_name: str):
     return templates.TemplateResponse(
         request=request,
         name="scanoptions.html",
-        context={"scanner": sane_scanner, "SANE_TYPE": SaneType, 'config': config},
+        context={"scanner": sane_scanner, "SANE_TYPE": SaneType, "config": config},
     )
