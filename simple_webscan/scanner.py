@@ -154,7 +154,7 @@ def scan(options: ScanOptions) -> Path | None:
             output = pymupdf.open()
             process_page(tmpdir, output, first_scan, n)
             output.save(final_path)
-            output.close()  # RAM-Objekt schließen, Datei existiert nun mit 1 Seite
+            output.close()  # now we have a one page document, that mupdf can save
 
             # resuse file to write the other pages incrementally
             with pymupdf.open(final_path) as output:
@@ -216,17 +216,11 @@ def add_backside(data: state.ScanOptions):
             if front.page_count != back.page_count:
                 logging.error("page numbers don't match, skipping")
             else:
-                # WICHTIG: Wenn wir Seiten in 'front' einfügen, verschieben sich die Indizes.
-                # Seite 1 (Index 0) bleibt Index 0. Die Rückseite muss auf Index 1.
-                # Die nächste Vorderseite war mal Index 1, ist jetzt aber Index 2.
-                # Formel für die Einfügeposition: (aktuelle_vorderseite_index * 2) + 1
-
                 back_pages_reversed = list(reversed(range(back.page_count)))
 
                 for step, back_idx in enumerate(back_pages_reversed):
                     insert_pos = (step * 2) + 1
 
-                    # Kopiert genau eine Seite direkt von 'back' nach 'front'
                     front.insert_pdf(
                         back, from_page=back_idx, to_page=back_idx, start_at=insert_pos
                     )
